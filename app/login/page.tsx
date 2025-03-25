@@ -1,108 +1,81 @@
 "use client";
 
-import InputLabel from "@/components/features/page/input-label";
-import { Button } from "@/components/ui/button";
-
-import { ArrowRight, Eye, EyeOff, Github, Lock, Shield } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import HeaderCardLogin from "./components/header-card-login";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LoginForm from "./components/login-form";
+import RegisterForm from "./components/register-form";
+import { useState } from "react";
+import ContinueGithub from "./components/continue-github";
 
-interface inputsLogin {
-  email: string;
-  password: string;
+interface TabContent {
+  title: string;
+  description: string;
+  value: "loginForm" | "registerForm";
+  component: React.ReactNode;
+  linkText: string;
+  linkLabel: string;
 }
 
 const Login = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<inputsLogin>();
-  const [viewPass, setViewPass] = useState<boolean>(false);
+  const [tabFormActive, setTabFormActive] = useState<boolean>(true);
 
-  const inputFields = [
+  const tabContents: TabContent[] = [
     {
-      label: "Usuario",
-      name: "email",
-      type: "text",
-      icon: <Shield size={20} />,
-      rules: { required: true, minLength: 3 },
+      title: "ACCESO AL SISTEMA",
+      description: "Ingresa tus credenciales para continuar",
+      value: "loginForm",
+      component: <LoginForm />,
+      linkText: "¿YA TIENES UNA CUENTA?",
+      linkLabel: "INICIAR SESIÓN",
     },
     {
-      label: "Contraseña",
-      name: "password",
-      type: viewPass ? "text" : "password",
-      icon: <Lock size={20} />,
-      rules: { required: true, minLength: 3 },
+      title: "CREAR CUENTA",
+      description: "Ingrese los datos requeridos para crear una cuenta",
+      value: "registerForm",
+      component: <RegisterForm updateForm={setTabFormActive} />,
+      linkText: "¿NO TIENES UNA CUENTA?",
+      linkLabel: "CREAR CUENTA",
     },
   ];
+
+  const activeTab = tabFormActive ? tabContents[0] : tabContents[1];
+  const oppositeTab = tabFormActive ? tabContents[1] : tabContents[0];
 
   return (
     <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
       <div className="w-full max-w-md">
         <HeaderCardLogin
-          title="ACCESO AL SISTEMA"
-          descripttion="Ingresa tus credenciales para continuar"
+          title={activeTab.title}
+          descripttion={activeTab.description}
         />
-        <form className="space-y-5">
-          {inputFields.map(({ label, name, type, icon, rules }, index) => (
-            <div className="relative" key={index}>
-              <InputLabel
-                label={label}
-                type={type}
-                name={name}
-                icon={icon}
-                validationRules={rules}
-                error={errors[name as keyof inputsLogin]?.message}
-                register={register}
-              />
-              {name === "password" && (
-                <span
-                  className={`absolute right-2 ${
-                    errors.password ? "top-[40%]" : "top-[55%]"
-                  } `}
-                  onClick={() => setViewPass(!viewPass)}
-                >
-                  {viewPass ? <EyeOff /> : <Eye />}
-                </span>
-              )}
-            </div>
+
+        <Tabs
+          defaultValue="loginForm"
+          className="w-[400px]"
+          onValueChange={(value) => setTabFormActive(value === "loginForm")}
+        >
+          {tabContents.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value}>
+              {tab.component}
+            </TabsContent>
           ))}
 
-          <div className="flex items-center justify-between">
-            <a
-              className="text-xs text-green-500 hover:text-green-400 font-mono"
+          <ContinueGithub />
+
+          <TabsList className="bg-transparent w-full">
+            <TabsTrigger
+              value={oppositeTab.value}
+              className="w-full justify-center hover:cursor-pointer"
             >
-              ¿OLVIDASTE TU CONTRASEÑA?
-            </a>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-black font-mono text-sm"
-          >
-            INICIAR SESIÓN
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-
-          <Button
-            type="submit"
-            className="w-full bg-transparent hover:bg-black text-white border border-green-500/30 "
-          >
-            CONTINUAR CON GITHUB
-            <Github className="ml-2 h-4 w-4" />
-          </Button>
-        </form>
-
-        <div className="mt-8 text-center">
-          <p className="text-green-400/70 text-xs font-mono">
-            ¿NO TIENES UNA CUENTA?{" "}
-            <a href="#" className="text-green-500 hover:text-green-400">
-              CREAR CUENTA
-            </a>
-          </p>
-        </div>
+              <p className="text-green-400/70 text-xs font-mono">
+                {oppositeTab.linkText}
+                <span className="text-green-500 hover:text-green-400 ml-1">
+                  {oppositeTab.linkLabel}
+                </span>
+              </p>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
     </div>
   );

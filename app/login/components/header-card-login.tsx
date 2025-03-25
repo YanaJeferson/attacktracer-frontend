@@ -7,10 +7,11 @@ interface HeaderCardLoginProps {
 }
 
 const HeaderCardLogin: React.FC<HeaderCardLoginProps> = ({
-  title,descripttion
+  title,
+  descripttion,
 }) => {
   return (
-    <div className="mb-8">
+    <div className="">
       <a href="#" className="flex items-center gap-2 mb-8">
         <Terminal className="h-5 w-5 text-green-500" />
         <span className="text-lg font-mono font-bold tracking-tight">
@@ -32,10 +33,12 @@ const HeaderCardLogin: React.FC<HeaderCardLoginProps> = ({
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold mb-2 font-mono text-white">{title}</h1>
-      <p className="text-green-400 font-mono text-sm">
-        {descripttion}
-      </p>
+      <div>
+        <h1 className="text-2xl font-bold mb-2 font-mono text-white">
+          {title}
+        </h1>
+        <p className="text-green-400 font-mono text-sm">{descripttion}</p>
+      </div>
     </div>
   );
 };
