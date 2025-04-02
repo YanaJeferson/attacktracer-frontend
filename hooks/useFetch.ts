@@ -35,6 +35,7 @@ export function useFetch<T>(): UseFetchResult<T> {
           "Content-Type": "application/json",
           ...options?.headers,
         },
+        credentials: "include",
       });
 
       const result = await response.json();
