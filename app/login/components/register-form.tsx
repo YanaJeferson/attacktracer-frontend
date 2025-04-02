@@ -52,7 +52,7 @@ const RegisterForm = ({
   ];
   const onSubmit = async (data: inputsRegiter) => {
     try {
-      await fetchData("/register/attacktracer", {
+      await fetchData("/user/register/attacktracer", {
         method: "POST",
         body: JSON.stringify(data),
         showError: true,

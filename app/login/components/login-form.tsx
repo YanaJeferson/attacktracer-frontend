@@ -3,8 +3,10 @@
 import ButtonLabel from "@/components/features/page/button-label";
 import InputLabel from "@/components/features/page/input-label";
 import { useFetch } from "@/hooks/useFetch";
+import useAuthStore from "@/store/login.store";
 import { Eye, EyeOff, Lock, Shield } from "lucide-react";
-import { useState } from "react";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface inputsLogin {
@@ -13,15 +15,19 @@ interface inputsLogin {
 }
 
 interface LoginResponse {
-  token: string;
+  access_token: string;
+  refresh_token: string;
   user: {
-    id: string;
-    email: string;
+    name: string;
+    avatar: string;
   };
 }
+
 const LoginForm = () => {
   const [viewPass, setViewPass] = useState<boolean>(false);
-  const { fetchData, isLoading, error } = useFetch<LoginResponse>();
+  const { fetchData, isLoading, error, data } = useFetch<LoginResponse>();
+  const { login } = useAuthStore();
+
   const {
     register,
     handleSubmit,
@@ -45,17 +51,30 @@ const LoginForm = () => {
     },
   ];
 
-  const onSubmit = async (data: inputsLogin) => {
+  const onSubmit = async (inputData: inputsLogin) => {
     try {
-      await fetchData("/login/attacktracer", {
+      await fetchData("/auth/login/attacktracer", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(inputData),
         showError: true,
       });
     } catch (error) {
       console.error("error", error);
     }
   };
+
+   useEffect(() => {
+     if (data) {
+       login({
+         userName: data.user.name,
+         userAvatar: data.user.avatar,
+         accessToken: data.access_token,
+         refreshToken: data.refresh_token,
+       });
+       redirect("/dashboard");
+     }
+   }, [data]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="flex flex-col gap-4 my-8">

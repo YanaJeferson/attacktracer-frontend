@@ -9,10 +9,23 @@ const UPDATE_INTERVAL = 1000
 const NEW_EVENT_PROBABILITY = 0.3
 
 const TerminalConsole = () => {
-  const [time, setTime] = useState(new Date())
+  const [mounted, setMounted] = useState(false)
+  const [time, setTime] = useState<string>("")
   const [activeTab, setActiveTab] = useState<"monitor" | "threats">("monitor")
   const [logEntries, setLogEntries] = useState<SecurityEvent[]>([])
   const terminalRef = useRef<HTMLDivElement>(null)
+
+  // Only run time-related code on the client side
+  useEffect(() => {
+    setMounted(true)
+    setTime(new Date().toLocaleTimeString())
+    
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
 
   const generateRealisticIP = () => 
     Math.random() > 0.7
@@ -22,8 +35,9 @@ const TerminalConsole = () => {
   const getRandomEvent = (): SecurityEvent => {
     const event = securityEvents[Math.floor(Math.random() * securityEvents.length)]
     const ip = generateRealisticIP()
+    const currentTime = new Date()
     return {
-      timestamp: new Date(time.getTime() - Math.floor(Math.random() * 60000))
+      timestamp: new Date(currentTime.getTime() - Math.floor(Math.random() * 60000))
         .toISOString()
         .replace("T", " ")
         .substring(0, 23),
@@ -36,25 +50,31 @@ const TerminalConsole = () => {
   }
 
   useEffect(() => {
-    // Auto-scroll
-    terminalRef.current?.scrollTo(0, terminalRef.current.scrollHeight)
-  }, [logEntries])
+    if (!mounted) return
 
-  useEffect(() => {
     // Initialize logs
     setLogEntries(Array.from({ length: 15 }, getRandomEvent))
 
-    // Update timer
-    const timer = setInterval(() => {
-      setTime(new Date())
+    // Update logs
+    const logTimer = setInterval(() => {
       if (Math.random() > NEW_EVENT_PROBABILITY) {
         setLogEntries(prev => [...prev.slice(-MAX_LOG_ENTRIES), getRandomEvent()])
       }
     }, UPDATE_INTERVAL)
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => clearInterval(logTimer)
+  }, [mounted])
 
+  // Auto-scroll effect
+  useEffect(() => {
+    terminalRef.current?.scrollTo(0, terminalRef.current.scrollHeight)
+  }, [logEntries])
+
+  if (!mounted) {
+    return null // or a loading state
+  }
+
+  // Rest of your component remains the same
   return (
     <div className="hidden lg:block w-1/2 bg-black relative overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0a0e0a_1px,transparent_1px),linear-gradient(to_bottom,#0a0e0a_1px,transparent_1px)] bg-[size:24px_24px] opacity-30"></div>
@@ -72,7 +92,7 @@ const TerminalConsole = () => {
               <span>ATTACKTRACER v3.4.2</span>
               <span className="text-green-500/50">|</span>
               <Clock size={12} />
-              <span>{time.toLocaleTimeString()}</span>
+              <span>{time}</span>
               <span className="text-green-500/50">|</span>
             </div>
           </div>
